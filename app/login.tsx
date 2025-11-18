@@ -1,7 +1,16 @@
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Image,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+} from "react-native";
 import { auth, googleProvider } from "./config/firebaseConfig";
 
 export default function LoginScreen() {
@@ -9,101 +18,175 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // 🔑 Inicio de sesión con correo y contraseña
   const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Campos vacíos", "Por favor, ingresa tu correo y contraseña.");
+      return;
+    }
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      router.push("/(tabs)/home"); // Ruta después del login exitoso
+      router.push("/(tabs)/home");
     } catch (error: any) {
-      alert("Error al iniciar sesión: " + error.message);
+      Alert.alert("Error al iniciar sesión", error.message);
     }
   };
 
-  // 🔐 Inicio de sesión con Google (Firebase)
   const handleGoogle = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
       router.push("/(tabs)/home");
     } catch (error: any) {
-      alert("Error al iniciar con Google: " + error.message);
+      Alert.alert("Error al iniciar con Google", error.message);
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Inicia sesión</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {}
+        <Image
+          source={require("./assets/images/logo3.png")}
+          style={styles.logo}
+        />
 
-      <TextInput
-        placeholder="Correo electrónico"
-        style={styles.input}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
+        <Text style={styles.title}>Inicia sesión</Text>
 
-      <TextInput
-        placeholder="Contraseña"
-        style={styles.input}
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+        {}
+        <Text style={styles.label}>Correo ó teléfono</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ingresa tu correo o teléfono"
+          placeholderTextColor="#AAA"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+        />
 
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Ingresar</Text>
-      </TouchableOpacity>
+        <Text style={styles.label}>Contraseña</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Ingresa tu contraseña"
+          placeholderTextColor="#AAA"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
 
-      <TouchableOpacity style={styles.googleButton} onPress={handleGoogle}>
-        <Text style={styles.googleText}>Continuar con Google</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.footer}>
-        ¿No tienes cuenta?{" "}
-        <TouchableOpacity onPress={() => router.push("/register")}>
-          <Text style={{ color: "#2196F3", textAlign: "center" }}>Regístrate</Text>
+        {}
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Ingresar</Text>
         </TouchableOpacity>
-      </Text>
-    </View>
+
+        <TouchableOpacity style={styles.googleButton} onPress={handleGoogle}>
+          <Image
+            source={require("./assets/images/google-ico.jpg")}
+            style={styles.googleIcon}
+          />
+          <Text style={styles.googleButtonText}>Continuar con Google</Text>
+        </TouchableOpacity>
+
+        {}
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>¿Aún no tienes una cuenta? </Text>
+          <TouchableOpacity onPress={() => router.push("/register")}>
+            <Text style={styles.signupLink}>Crea una</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </SafeAreaView>
   );
 }
-
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f5f5f5",
-    padding: 20,
+    padding: 24,
+    backgroundColor: "#FFFFFF",
   },
-  title: { fontSize: 24, marginBottom: 20, fontWeight: "bold" },
+  logo: {
+    width: 390,
+    height: 124,
+    resizeMode: "contain",
+    marginBottom: 40,
+  },
+  title: {
+    fontSize: 26,
+    fontWeight: "bold",
+    color: "#5D5D5D",
+    marginBottom: 30,
+  },
+  label: {
+    alignSelf: "flex-start",
+    fontSize: 14,
+    color: "#8A8A8A",
+    marginBottom: 8,
+    marginLeft: 10,
+  },
   input: {
     width: "100%",
-    padding: 12,
-    marginVertical: 8,
-    borderRadius: 25,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#E0E0E0",
+    borderRadius: 25,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    fontSize: 16,
+    marginBottom: 20,
+    color: "#333",
   },
   loginButton: {
-    backgroundColor: "#83c41a",
+    width: "60%",
+    backgroundColor: "#DCDCDC",
     borderRadius: 25,
-    paddingVertical: 12,
-    width: "100%",
+    paddingVertical: 14,
     alignItems: "center",
-    marginVertical: 10,
+    marginBottom: 16,
   },
-  loginButtonText: { color: "#fff", fontWeight: "bold", fontSize: 16 },
+  loginButtonText: {
+    color: "#FFFEFE",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   googleButton: {
-    backgroundColor: "#fff",
-    borderRadius: 25,
-    paddingVertical: 10,
     width: "100%",
-    alignItems: "center",
+    flexDirection: "row",
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#E0E0E0",
+    borderRadius: 25,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 24,
   },
-  googleText: { fontSize: 16 },
-  footer: { marginTop: 20, color: "#666" },
+  googleIcon: {
+    width: 20,
+    height: 20,
+    marginRight: 12,
+  },
+  googleButtonText: {
+    color: "#333",
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  footerContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  footerText: {
+    fontSize: 14,
+    color: "#8A8A8A",
+  },
+  signupLink: {
+    fontSize: 14,
+    color: "#83c41a",
+    fontWeight: "bold",
+  },
 });

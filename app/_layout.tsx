@@ -1,116 +1,46 @@
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
+import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import React, { useEffect, useState } from 'react';
+import 'react-native-reanimated';
+import { app } from './config/firebaseConfig';
 
-// Mantiene la pantalla de bienvenida visible mientras cargan las fuentes
-SplashScreen.preventAutoHideAsync();
+export const unstable_settings = {
+  anchor: '(tabs)',
+};
 
-export default function WelcomeScreen() {
-  const router = useRouter();
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const [user, setUser] = useState<any>(null);
+  const auth = getAuth(app);
 
+  // Escucha los cambios de autenticación (login/logout)
   useEffect(() => {
-    async function loadFonts() {
-      try {
-        await Font.loadAsync({
-          // Carga las dos fuentes que necesitas
-          'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
-          'LiuJianMaoCao-Regular': require('./assets/fonts/LiuJianMaoCao-Regular.ttf'),
-        });
-      } catch (e) {
-        console.warn("Error cargando fuentes: ", e);
-      } finally {
-        setFontsLoaded(true);
-        SplashScreen.hideAsync(); // Oculta la pantalla de bienvenida
-      }
-    }
-    loadFonts();
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return unsubscribe;
   }, []);
 
-  // No renderiza nada hasta que las fuentes estén cargadas
-  if (!fontsLoaded) {
-    return null;
-  }
-
   return (
-    <View style={styles.container}>
-      <View style={styles.topContent}>
-        <Image
-          source={require("./assets/images/logo.png")}
-          style={styles.logo}
-        />
-        <Text style={styles.welcome}>¡Bienvenido!</Text>
-        <Text style={styles.description}>
-          En Frescapp, somos tu plaza online, ¡permítenos ir a la plaza por ti!
-        </Text>
-      </View>
-
-      <Image
-        source={require("./assets/images/fruits.png")}
-        style={styles.fruits}
-      />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => router.push("/login")}
-      >
-        <Text style={styles.buttonText}>Iniciar →</Text>
-      </TouchableOpacity>
-    </View>
+    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <Stack>
+        {user ? (
+          // Si hay usuario logueado, muestra las tabs
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        ) : (
+          // Si NO hay usuario, muestra login y register
+          <>
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+            <Stack.Screen name="login" options={{ headerShown: false }} />
+            <Stack.Screen name="register" options={{ headerShown: false }} />
+          </>
+        )}
+        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      </Stack>
+      <StatusBar style="auto" />
+    </ThemeProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#1a1a1a",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 40,
-    paddingHorizontal: 20,
-  },
-  topContent: {
-    alignItems: "center",
-    paddingTop: 60,
-  },
-  logo: {
-    width: 220,
-    height: 120,
-    resizeMode: "contain",
-    marginBottom: 25,
-  },
-  welcome: {
-    fontSize: 42,
-    color: "#fff",
-    fontFamily: "LiuJianMaoCao-Regular", // Aplica la fuente Liu Jian Mao Cao
-    marginBottom: 20,
-  },
-  description: {
-    color: "#fff",
-    fontSize: 18,
-    textAlign: "center",
-    maxWidth: "85%",
-    lineHeight: 26,
-    fontFamily: "Poppins-Regular", // Aplica la fuente Poppins
-  },
-  fruits: {
-    width: 280,
-    height: 180,
-    resizeMode: "contain",
-    position: "absolute",
-    bottom: 0,
-    left: -20,
-  },
-  button: {
-    position: "absolute",
-    bottom: 30,
-    right: 30,
-  },
-  buttonText: {
-    color: "#fff",
-    fontSize: 20,
-    fontWeight: "bold",
-  },
-});
