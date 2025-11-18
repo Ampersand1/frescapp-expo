@@ -1,4 +1,3 @@
-// app/index.tsx
 import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
@@ -8,16 +7,26 @@ export default function WelcomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Image source={require("./assets/images/logo.png")} style={styles.logo} />
-      <Text style={styles.welcome}>¡Bienvenido!</Text>
-      <Text style={styles.description}>
-        En Frescapp, somos tu plaza online, ¡permítenos ir a la plaza por ti!
-      </Text>
+      <View style={styles.topContent}>
+        <Image
+          source={require("./assets/images/logo.png")}
+          style={styles.logo}
+        />
+        <Text style={styles.welcome}>¡Bienvenido!</Text>
+        <Text style={styles.description}>
+          En Frescapp, somos tu plaza online, ¡permítenos ir a la plaza por ti!
+        </Text>
+      </View>
+
       <Image
         source={require("./assets/images/fruits.png")}
         style={styles.fruits}
       />
-      <TouchableOpacity style={styles.button} onPress={() => router.push("/register")}>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => router.push("/login")}
+      >
         <Text style={styles.buttonText}>Iniciar →</Text>
       </TouchableOpacity>
     </View>
@@ -29,41 +38,49 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#1a1a1a",
     alignItems: "center",
-    justifyContent: "center",
-    padding: 20,
+    justifyContent: "space-between",
+    paddingVertical: 40,
+    paddingHorizontal: 20,
+  },
+  topContent: {
+    alignItems: "center",
+    paddingTop: 60,
   },
   logo: {
-    width: 160,
-    height: 100,
+    width: 220,
+    height: 120,
     resizeMode: "contain",
-    marginBottom: 20,
+    marginBottom: 25,
   },
   welcome: {
-    fontSize: 32,
+    fontSize: 42,
     color: "#fff",
     fontFamily: "Cursive",
-    marginBottom: 10,
+    marginBottom: 20,
   },
   description: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 18,
     textAlign: "center",
-    marginBottom: 40,
+    maxWidth: "85%",
+    lineHeight: 26,
   },
   fruits: {
-    width: 180,
-    height: 100,
+    width: 280,
+    height: 180,
     resizeMode: "contain",
     position: "absolute",
-    bottom: 80,
+    bottom: 0,
+    left: -60,
   },
   button: {
     position: "absolute",
-    bottom: 20,
-    right: 20,
+    bottom: 30,
+    right: 30,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: "bold",
   },
 });
