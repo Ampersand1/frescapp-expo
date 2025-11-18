@@ -1,9 +1,13 @@
 import { useRouter } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+// Ya no necesitas importar Font, SplashScreen, useEffect, o useState aquí
 
 export default function WelcomeScreen() {
   const router = useRouter();
+
+  // No necesitamos el useEffect ni el 'if (!fontsLoaded)'
+  // porque _layout.tsx se encarga de eso.
 
   return (
     <View style={styles.container}>
@@ -11,8 +15,9 @@ export default function WelcomeScreen() {
         <Image
           source={require("./assets/images/logo.png")}
           style={styles.logo}
+          resizeMode="contain" // <-- ARREGLADO: 'resizeMode' va aquí como prop
         />
-        <Text style={styles.welcome}>¡Bienvenido!</Text>
+        <Text style={styles.welcome}>Bienvenido!</Text>
         <Text style={styles.description}>
           En Frescapp, somos tu plaza online, ¡permítenos ir a la plaza por ti!
         </Text>
@@ -21,6 +26,7 @@ export default function WelcomeScreen() {
       <Image
         source={require("./assets/images/fruits.png")}
         style={styles.fruits}
+        resizeMode="contain" // <-- ARREGLADO: 'resizeMode' va aquí como prop
       />
 
       <TouchableOpacity
@@ -49,13 +55,13 @@ const styles = StyleSheet.create({
   logo: {
     width: 220,
     height: 120,
-    resizeMode: "contain",
+    // quitamos 'resizeMode' de aquí
     marginBottom: 25,
   },
   welcome: {
-    fontSize: 42,
+    fontSize: 64,
     color: "#fff",
-    fontFamily: "Cursive",
+    fontFamily: "LiuJianMaoCao-Regular", // <-- Esto funcionará
     marginBottom: 20,
   },
   description: {
@@ -64,11 +70,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
     maxWidth: "85%",
     lineHeight: 26,
+    fontFamily: "Poppins-Regular", // <-- Esto funcionará
   },
   fruits: {
     width: 280,
     height: 180,
-    resizeMode: "contain",
+    // quitamos 'resizeMode' de aquí
     position: "absolute",
     bottom: 0,
     left: -60,
@@ -82,5 +89,6 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
+    fontFamily: "Poppins-Regular",
   },
 });
