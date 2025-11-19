@@ -12,6 +12,9 @@ import {
 } from "react-native";
 import { db } from "../config/firebaseConfig";
 
+// ⬅️ Importa el contexto del carrito
+import { useCart } from "../context/cartContext";
+
 interface Product {
   id: string;
   name: string;
@@ -21,7 +24,6 @@ interface Product {
   stock: number;
 }
 
-// Coinciden con tus categorías REALES en Firestore
 const CATEGORIES = [
   { name: "Fruta", icon: require("../assets/categorias/frutas.png") },
   { name: "Verdura", icon: require("../assets/categorias/verduras.png") },
@@ -34,6 +36,9 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
 
+  // ⬅️ Obtiene addToCart desde el contexto
+  const { addToCart } = useCart();
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -41,7 +46,7 @@ export default function Home() {
         const data = snapshot.docs.map((doc) => {
           const productData = doc.data();
           return {
-            id: doc.id,         // 🔥 SOLO SE DEFINE AQUÍ
+            id: doc.id,
             name: productData.name,
             price: productData.price,
             imageUrl: productData.imageUrl,
@@ -52,7 +57,7 @@ export default function Home() {
 
         setProducts(data);
       } catch (e) {
-        console.log("❌ Error al cargar productos:", e);
+        console.log("Error al cargar productos:", e);
       }
     };
 
@@ -63,7 +68,6 @@ export default function Home() {
     p.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Agrupa productos por categoría REAL de Firestore
   const groupedProducts = CATEGORIES.map((cat) => ({
     category: cat.name,
     products: filtered.filter(
@@ -76,7 +80,7 @@ export default function Home() {
       {/* LOGO */}
       <View style={styles.header}>
         <Image
-          source={require("../assets/images/logo.png")}
+          source={require("../assets/images/logo2.png")}
           style={styles.logo}
           resizeMode="contain"
         />
@@ -125,10 +129,15 @@ export default function Home() {
                       source={{ uri: item.imageUrl }}
                       style={styles.productImage}
                     />
+
                     <Text style={styles.productPrice}>${item.price}</Text>
                     <Text style={styles.productName}>{item.name}</Text>
 
-                    <TouchableOpacity style={styles.addButton}>
+                    {/* ⬅️ BOTÓN AGREGAR PRODUCTO */}
+                    <TouchableOpacity
+                      style={styles.addButton}
+                      onPress={() => addToCart(item)}
+                    >
                       <Text style={styles.addButtonText}>+</Text>
                     </TouchableOpacity>
                   </View>

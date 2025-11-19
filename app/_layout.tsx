@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { app } from './config/firebaseConfig';
+import { CartProvider } from "./context/cartContext";
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -25,22 +26,34 @@ export default function RootLayout() {
   }, []);
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        {user ? (
-          // Si hay usuario logueado, muestra las tabs
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        ) : (
-          // Si NO hay usuario, muestra login y register
-          <>
-            <Stack.Screen name="index" options={{ headerShown: false }} />
-            <Stack.Screen name="login" options={{ headerShown: false }} />
-            <Stack.Screen name="register" options={{ headerShown: false }} />
-          </>
-        )}
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <CartProvider>
+      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <Stack>
+
+          {user ? (
+            // Si hay usuario logueado, muestra las tabs
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          ) : (
+            // Si NO hay usuario, muestra login y register
+            <>
+              <Stack.Screen name="index" options={{ headerShown: false }} />
+              <Stack.Screen name="login" options={{ headerShown: false }} />
+              <Stack.Screen name="register" options={{ headerShown: false }} />
+            </>
+          )}
+
+          {/* ⭐ IMPORTANTE: Permite navegar a /checkout desde cualquier parte */}
+          <Stack.Screen name="checkout" options={{ headerShown: false }} />
+
+          {/* tu modal ya existente */}
+          <Stack.Screen
+            name="modal"
+            options={{ presentation: 'modal', title: 'Modal' }}
+          />
+        </Stack>
+
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </CartProvider>
   );
 }
