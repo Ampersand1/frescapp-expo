@@ -97,7 +97,7 @@ export default function RegisterScreen() {
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogle}>
           <Image
             // Asegúrate que esta ruta a tu ícono de Google sea correcta
-            source={require("./assets/images/google-ico.jpg")}
+            source={require("./assets/images/google-ico.png")}
             style={styles.googleIcon}
           />
           <Text style={styles.googleButtonText}>Continuar con Google</Text>

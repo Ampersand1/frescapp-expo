@@ -11,12 +11,20 @@ import {
   View,
   Alert,
 } from "react-native";
+
+// Importamos el componente que creamos arriba
+// Si te marca error aquí, revisa que la ruta '../components/GoogleLoginModal' sea correcta
+import GoogleLoginModal from "../src/components/GoogleLoginModal";
 import { auth, googleProvider } from "./config/firebaseConfig";
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  // Estados para controlar la animación
+  const [modalVisible, setModalVisible] = useState(false);
+  const [loginStatus, setLoginStatus] = useState('loading'); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -32,18 +40,36 @@ export default function LoginScreen() {
   };
 
   const handleGoogle = async () => {
+    // 1. Activamos el modal en modo 'Cargando'
+    setLoginStatus('loading');
+    setModalVisible(true);
+
     try {
+      // 2. Intentamos el login
       await signInWithPopup(auth, googleProvider);
-      router.push("/(tabs)/home");
+      
+      // 3. Si funciona, cambiamos a modo 'Éxito'
+      setLoginStatus('success');
+
+      // 4. Esperamos 1.5 segundos viendo el check verde antes de cambiar de pantalla
+      setTimeout(() => {
+        setModalVisible(false);
+        router.push("/(tabs)/home");
+      }, 1500);
+
     } catch (error: any) {
-      Alert.alert("Error al iniciar con Google", error.message);
+      setModalVisible(false);
+      Alert.alert("Error", "Fallo al iniciar con Google: " + error.message);
     }
   };
 
   return (
     <SafeAreaView style={styles.safeArea}>
+      
+      {/* Renderizamos el componente de animación aquí */}
+      <GoogleLoginModal visible={modalVisible} status={loginStatus} />
+
       <View style={styles.container}>
-        {}
         <Image
           source={require("./assets/images/logo3.png")}
           style={styles.logo}
@@ -51,7 +77,6 @@ export default function LoginScreen() {
 
         <Text style={styles.title}>Inicia sesión</Text>
 
-        {}
         <Text style={styles.label}>Correo ó teléfono</Text>
         <TextInput
           style={styles.input}
@@ -73,20 +98,18 @@ export default function LoginScreen() {
           onChangeText={setPassword}
         />
 
-        {}
         <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
           <Text style={styles.loginButtonText}>Ingresar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogle}>
           <Image
-            source={require("./assets/images/google-ico.jpg")}
+            source={require("./assets/images/google-ico.png")}
             style={styles.googleIcon}
           />
           <Text style={styles.googleButtonText}>Continuar con Google</Text>
         </TouchableOpacity>
 
-        {}
         <View style={styles.footerContainer}>
           <Text style={styles.footerText}>¿Aún no tienes una cuenta? </Text>
           <TouchableOpacity onPress={() => router.push("/register")}>
@@ -97,6 +120,7 @@ export default function LoginScreen() {
     </SafeAreaView>
   );
 }
+
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
