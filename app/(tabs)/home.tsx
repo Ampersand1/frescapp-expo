@@ -1,5 +1,6 @@
 import { collection, getDocs } from "firebase/firestore";
 import React, { useEffect, useState } from "react";
+
 import {
   FlatList,
   Image,
@@ -12,8 +13,9 @@ import {
 } from "react-native";
 import { db } from "../config/firebaseConfig";
 
-// ⬅️ Importa el contexto del carrito
 import { useCart } from "../context/cartContext";
+
+import OpenChatbotButton from "../../components/OpenChatbotButton";
 
 interface Product {
   id: string;
@@ -36,7 +38,6 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
 
-  // ⬅️ Obtiene addToCart desde el contexto
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -76,77 +77,80 @@ export default function Home() {
   }));
 
   return (
-    <ScrollView style={styles.container}>
-      {/* LOGO */}
-      <View style={styles.header}>
-        <Image
-          source={require("../assets/images/logo2.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
+    <View style={{ flex: 1 }}>
+      <ScrollView style={styles.container}>
+        {/* LOGO */}
+        <View style={styles.header}>
+          <Image
+            source={require("../assets/images/logo2.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-      {/* BUSCADOR */}
-      <View style={styles.searchBox}>
-        <TextInput
-          placeholder="Buscar"
-          value={search}
-          onChangeText={setSearch}
-          style={styles.searchInput}
-        />
-      </View>
+        {/* BUSCADOR */}
+        <View style={styles.searchBox}>
+          <TextInput
+            placeholder="Buscar"
+            value={search}
+            onChangeText={setSearch}
+            style={styles.searchInput}
+          />
+        </View>
 
-      {/* CATEGORÍAS */}
-      <Text style={styles.sectionTitle}>Categorias</Text>
-      <FlatList
-        data={CATEGORIES}
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View style={styles.categoryItem}>
-            <Image source={item.icon} style={styles.categoryImage} />
-            <Text style={styles.categoryLabel}>{item.name}</Text>
-          </View>
-        )}
-        keyExtractor={(item) => item.name}
-      />
-
-      {/* PRODUCTOS */}
-      {groupedProducts.map(
-        (group) =>
-          group.products.length > 0 && (
-            <View key={group.category} style={styles.section}>
-              <Text style={styles.sectionTitle}>{group.category}</Text>
-
-              <FlatList
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                data={group.products}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <View style={styles.productCard}>
-                    <Image
-                      source={{ uri: item.imageUrl }}
-                      style={styles.productImage}
-                    />
-
-                    <Text style={styles.productPrice}>${item.price}</Text>
-                    <Text style={styles.productName}>{item.name}</Text>
-
-                    {/* ⬅️ BOTÓN AGREGAR PRODUCTO */}
-                    <TouchableOpacity
-                      style={styles.addButton}
-                      onPress={() => addToCart(item)}
-                    >
-                      <Text style={styles.addButtonText}>+</Text>
-                    </TouchableOpacity>
-                  </View>
-                )}
-              />
+        {/* CATEGORÍAS */}
+        <Text style={styles.sectionTitle}>Categorias</Text>
+        <FlatList
+          data={CATEGORIES}
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          renderItem={({ item }) => (
+            <View style={styles.categoryItem}>
+              <Image source={item.icon} style={styles.categoryImage} />
+              <Text style={styles.categoryLabel}>{item.name}</Text>
             </View>
-          )
-      )}
-    </ScrollView>
+          )}
+          keyExtractor={(item) => item.name}
+        />
+
+        {/* PRODUCTOS */}
+        {groupedProducts.map(
+          (group) =>
+            group.products.length > 0 && (
+              <View key={group.category} style={styles.section}>
+                <Text style={styles.sectionTitle}>{group.category}</Text>
+
+                <FlatList
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  data={group.products}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <View style={styles.productCard}>
+                      <Image
+                        source={{ uri: item.imageUrl }}
+                        style={styles.productImage}
+                      />
+                      <Text style={styles.productPrice}>${item.price}</Text>
+                      <Text style={styles.productName}>{item.name}</Text>
+
+                      <TouchableOpacity
+                        style={styles.addButton}
+                        onPress={() => addToCart(item)}
+                      >
+                        <Text style={styles.addButtonText}>+</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                />
+              </View>
+            )
+        )}
+      </ScrollView>
+
+      {/* BOTÓN CHATBOT FLOTANTE */}
+      <OpenChatbotButton />
+    </View>
   );
 }
 

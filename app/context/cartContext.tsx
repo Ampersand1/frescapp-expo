@@ -10,14 +10,14 @@ export interface CartItem {
 
 export interface CartContextType {
   cartItems: CartItem[];
-  cart: CartItem[];               // ← COMPATIBILIDAD
+  cart: CartItem[];               
   total: number;
 
   addToCart: (item: Omit<CartItem, "quantity">) => void;
   increaseQuantity: (id: string) => void;
   decreaseQuantity: (id: string) => void;
 
-  removeFromCart: (id: string) => void;   // ← NECESARIO PARA CartScreen
+  removeFromCart: (id: string) => void; 
   clearCart: () => void;
 }
 

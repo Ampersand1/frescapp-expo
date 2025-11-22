@@ -1,8 +1,8 @@
+import * as Font from 'expo-font';
 import { useRouter } from "expo-router";
+import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import * as Font from 'expo-font';
-import * as SplashScreen from 'expo-splash-screen';
 
 // Mantiene la pantalla de bienvenida visible mientras cargan las fuentes
 SplashScreen.preventAutoHideAsync();
@@ -15,7 +15,6 @@ export default function WelcomeScreen() {
     async function loadFonts() {
       try {
         await Font.loadAsync({
-          // Carga las dos fuentes que necesitas
           'Poppins-Regular': require('./assets/fonts/Poppins-Regular.ttf'),
           'LiuJianMaoCao-Regular': require('./assets/fonts/LiuJianMaoCao-Regular.ttf'),
         });
@@ -23,13 +22,12 @@ export default function WelcomeScreen() {
         console.warn("Error cargando fuentes: ", e);
       } finally {
         setFontsLoaded(true);
-        SplashScreen.hideAsync(); // Oculta la pantalla de bienvenida
+        SplashScreen.hideAsync();
       }
     }
     loadFonts();
   }, []);
 
-  // No renderiza nada hasta que las fuentes estén cargadas
   if (!fontsLoaded) {
     return null;
   }
@@ -58,6 +56,7 @@ export default function WelcomeScreen() {
       >
         <Text style={styles.buttonText}>Iniciar 🡺</Text>
       </TouchableOpacity>
+
     </View>
   );
 }
@@ -84,7 +83,7 @@ const styles = StyleSheet.create({
   welcome: {
     fontSize: 64,
     color: "#fff",
-    fontFamily: "LiuJianMaoCao-Regular", // Aplica la fuente Liu Jian Mao Cao
+    fontFamily: "LiuJianMaoCao-Regular",
     marginBottom: 20,
   },
   description: {
@@ -95,7 +94,7 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     fontFamily: "Poppins-Regular",
     position: "relative",
-    top:21,
+    top: 21,
   },
   fruits: {
     width: 280,
@@ -116,6 +115,20 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
     left: 20,
     position: "relative",
-    top:21,
+    top: 21,
+  },
+  chatbotButton: {
+    position: "absolute",
+    bottom: 30,
+    left: 30,
+    backgroundColor: "#83c41a",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 25,
+  },
+  chatbotButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontFamily: "Poppins-Regular",
   },
 });

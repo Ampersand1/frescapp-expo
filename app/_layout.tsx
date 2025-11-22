@@ -6,18 +6,15 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import React, { useEffect, useState } from 'react';
 import 'react-native-reanimated';
 import { app } from './config/firebaseConfig';
-import { CartProvider } from "./context/cartContext";
+import { CartProvider } from './context/cartContext';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
+export const unstable_settings = { anchor: '(tabs)' };
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [user, setUser] = useState<any>(null);
   const auth = getAuth(app);
 
-  // Escucha los cambios de autenticación (login/logout)
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -28,30 +25,23 @@ export default function RootLayout() {
   return (
     <CartProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-
+        <Stack screenOptions={{ headerShown: false }}>
           {user ? (
-            // Si hay usuario logueado, muestra las tabs
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            // Tabs principales si hay usuario
+            <Stack.Screen name="(tabs)" />
           ) : (
-            // Si NO hay usuario, muestra login y register
             <>
-              <Stack.Screen name="index" options={{ headerShown: false }} />
-              <Stack.Screen name="login" options={{ headerShown: false }} />
-              <Stack.Screen name="register" options={{ headerShown: false }} />
+              <Stack.Screen name="index" />
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
             </>
           )}
 
-          {/* ⭐ IMPORTANTE: Permite navegar a /checkout desde cualquier parte */}
-          <Stack.Screen name="checkout" options={{ headerShown: false }} />
-
-          {/* tu modal ya existente */}
-          <Stack.Screen
-            name="modal"
-            options={{ presentation: 'modal', title: 'Modal' }}
-          />
+          {/* Screens adicionales */}
+          <Stack.Screen name="checkout" />
+          <Stack.Screen name="chatbot" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
         </Stack>
-
         <StatusBar style="auto" />
       </ThemeProvider>
     </CartProvider>
