@@ -104,10 +104,10 @@ export default function OfertasScreen() {
 
       <ScrollView 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 180 }} // Más espacio para scroll
+        contentContainerStyle={{ paddingBottom: 180 }} 
       >
         
-        {/* 1. CARRUSEL SUPERIOR */}
+        {}
         <View style={styles.carouselSection}>
           <FlatList
             data={topOffers}
@@ -121,7 +121,7 @@ export default function OfertasScreen() {
           />
         </View>
 
-        {/* 2. CATEGORÍAS */}
+        {}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Busca por categoria</Text>
           <FlatList
@@ -141,7 +141,7 @@ export default function OfertasScreen() {
           />
         </View>
 
-        {/* 3. SUPER DESCUENTOS */}
+        {}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Super descuentos</Text>
           
@@ -152,8 +152,8 @@ export default function OfertasScreen() {
 
       </ScrollView>
 
-      {/* --- CARRITO FLOTANTE (VISIBLE) --- */}
-      {/* Ajustado a bottom: 110 para flotar sobre el menú verde */}
+      {}
+      {}
       <TouchableOpacity style={styles.floatingCartBtn}>
         <Ionicons name="basket-outline" size={26} color="#333" />
         <View style={styles.floatingBadge}>
@@ -165,7 +165,7 @@ export default function OfertasScreen() {
   );
 }
 
-// --- SUB-COMPONENTES ---
+
 
 const TopOfferItem = ({ item, addToCart }: { item: Product, addToCart: any }) => {
   return (
@@ -201,7 +201,7 @@ const SuperDiscountItem = ({ item, addToCart }: { item: Product, addToCart: any 
 
   return (
     <View style={styles.superCard}>
-      {/* Control Flotante Píldora */}
+      {}
       <View style={styles.floatingControl}>
         <TouchableOpacity style={styles.ctrlBtnRed} onPress={decrease}>
            <Ionicons name={qty === 1 ? "trash-outline" : "remove"} size={14} color="#FFF" />
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#FAFAFA",
   },
   
-  // HEADER
+  
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -270,7 +270,7 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 
-  // CARRUSEL
+  
   carouselSection: {
     marginTop: 5,
     marginBottom: 20,
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
   productName: { fontSize: 12, color: '#333', marginBottom: 2, height: 32 },
   categoryText: { fontSize: 11, color: '#AAA' },
 
-  // CATEGORÍAS
+  
   sectionContainer: {
     marginBottom: 25,
   },
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
   catImage: { width: 35, height: 35, resizeMode: 'contain' },
   catText: { fontSize: 11, color: '#555' },
 
-  // SUPER DESCUENTOS
+  
   superCard: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
@@ -470,10 +470,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
 
-  // --- ESTILOS CORREGIDOS CARRITO FLOTANTE ---
+
   floatingCartBtn: {
     position: "absolute",
-    bottom: 110, // ELEVADO PARA QUE SE VEA SOBRE EL MENÚ
+    bottom: 110, 
     right: 20,
     backgroundColor: "#FFF",
     width: 60,

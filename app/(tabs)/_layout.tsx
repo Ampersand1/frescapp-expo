@@ -7,10 +7,10 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        // BARRA VERDE LIMÓN CON CURVAS
+        
         tabBarStyle: {
-          backgroundColor: "#83c41a", // Verde Mockup
-          height: Platform.OS === 'ios' ? 90 : 75, // Altura suficiente
+          backgroundColor: "#83c41a", 
+          height: Platform.OS === 'ios' ? 90 : 75, 
           borderTopLeftRadius: 30,
           borderTopRightRadius: 30,
           position: 'absolute',
@@ -18,7 +18,7 @@ export default function TabLayout() {
           left: 0,
           right: 0,
           borderTopWidth: 0,
-          elevation: 10, // Sombra para que flote sobre el contenido
+          elevation: 10, 
           shadowColor: "#000",
           shadowOffset: { width: 0, height: -3 },
           shadowOpacity: 0.1,
@@ -26,8 +26,8 @@ export default function TabLayout() {
           paddingBottom: Platform.OS === 'ios' ? 25 : 10,
           paddingTop: 10,
         },
-        tabBarActiveTintColor: "#FFFFFF", // Blanco
-        tabBarInactiveTintColor: "#2b4a03", // Verde muy oscuro
+        tabBarActiveTintColor: "#FFFFFF", 
+        tabBarInactiveTintColor: "#2b4a03", 
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: 'bold',
@@ -35,7 +35,7 @@ export default function TabLayout() {
         },
       }}
     >
-      {/* 1. HOME */}
+      {}
       <Tabs.Screen
         name="home"
         options={{
@@ -46,7 +46,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 2. OFERTAS (Si no tienes ofertas.tsx, crea uno vacío o esta pestaña no saldrá) */}
+      {}
       <Tabs.Screen
         name="ofertas"
         options={{
@@ -57,7 +57,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 3. CARRITO */}
+      {}
       <Tabs.Screen
         name="cart"
         options={{
@@ -68,7 +68,7 @@ export default function TabLayout() {
         }}
       />
 
-      {/* 4. PERFIL */}
+      {}
       <Tabs.Screen
         name="profile"
         options={{

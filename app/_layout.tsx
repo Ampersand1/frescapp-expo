@@ -27,7 +27,7 @@ export default function RootLayout() {
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
           {user ? (
-            // Tabs principales si hay usuario
+            
             <Stack.Screen name="(tabs)" />
           ) : (
             <>
@@ -37,7 +37,7 @@ export default function RootLayout() {
             </>
           )}
 
-          {/* Screens adicionales */}
+          {}
           <Stack.Screen name="checkout" />
           <Stack.Screen name="chatbot" />
           <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

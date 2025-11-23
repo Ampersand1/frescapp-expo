@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore"; // Importamos funciones de Firestore
 import React, { useState } from "react";
 import {
   Image,
@@ -10,15 +11,18 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  ActivityIndicator,
 } from "react-native";
-// Asegúrate que esta ruta a tu configuración de Firebase sea correcta
-import { auth, googleProvider } from "./config/firebaseConfig";
+// Asegúrate de exportar 'db' desde tu archivo de configuración
+import { auth, db, googleProvider } from "./config/firebaseConfig"; 
+import { signInWithPopup } from "firebase/auth";
 
 export default function RegisterScreen() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!email || !password || !confirm) {
@@ -29,20 +33,52 @@ export default function RegisterScreen() {
       Alert.alert("Error", "Las contraseñas no coinciden");
       return;
     }
+
+    setLoading(true);
     try {
-      await createUserWithEmailAndPassword(auth, email, password);
+      // 1. Crear usuario en Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // 2. CREACIÓN DINÁMICA DEL PERFIL EN FIRESTORE
+      // Usamos el UID del usuario como ID del documento
+      await setDoc(doc(db, "users", user.uid), {
+        nickname: "Usuario Nuevo", // Valor por defecto
+        email: user.email,
+        photoURL: "",
+        phone: "",
+        createdAt: new Date(),
+        // No necesitamos crear 'addresses' aquí, se crea sola cuando guardes la primera dirección
+      });
+
+      console.log("Perfil creado exitosamente en Firestore");
       router.push("/(tabs)/home");
+      
     } catch (error: any) {
       Alert.alert("Error al registrar", error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Manejo de registro con Google (para asegurar que también cree el perfil)
   const handleGoogle = async () => {
     try {
-      // ADVERTENCIA: signInWithPopup es para WEB.
-      // Para React Native (Expo) deberías usar 'expo-auth-session'.
-      await signInWithPopup(auth, googleProvider);
-      router.push("/(tabs)/home");
+        // Nota: signInWithPopup suele ser para web. En móvil nativo se usa GoogleSignin.
+        // Si estás en Expo Go / Web, esto funciona.
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Intentamos crear el documento SOLO si no existe (merge: true ayuda a no sobrescribir si ya existe)
+        await setDoc(doc(db, "users", user.uid), {
+            nickname: user.displayName || "Usuario Google",
+            email: user.email,
+            photoURL: user.photoURL || "",
+            phone: "",
+            createdAt: new Date(),
+        }, { merge: true }); 
+
+        router.push("/(tabs)/home");
     } catch (error: any) {
       Alert.alert("Error al iniciar con Google", error.message);
     }
@@ -52,7 +88,6 @@ export default function RegisterScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Image
-          // Asegúrate que esta ruta a tu logo sea correcta
           source={require("./assets/images/logo3.png")}
           style={styles.logo}
         />
@@ -90,13 +125,20 @@ export default function RegisterScreen() {
           onChangeText={setConfirm}
         />
 
-        <TouchableOpacity style={styles.createButton} onPress={handleRegister}>
-          <Text style={styles.createButtonText}>Crear</Text>
+        <TouchableOpacity 
+            style={styles.createButton} 
+            onPress={handleRegister}
+            disabled={loading}
+        >
+          {loading ? (
+             <ActivityIndicator color="#83c41a" />
+          ) : (
+             <Text style={styles.createButtonText}>Crear</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.googleButton} onPress={handleGoogle}>
           <Image
-            // Asegúrate que esta ruta a tu ícono de Google sea correcta
             source={require("./assets/images/google-ico.png")}
             style={styles.googleIcon}
           />
@@ -114,7 +156,6 @@ export default function RegisterScreen() {
   );
 }
 
-// Estilos adaptados del LoginScreen para coincidir con el Mockup de Registro
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
@@ -160,16 +201,16 @@ const styles = StyleSheet.create({
   },
   createButton: {
     width: "60%",
-    backgroundColor: "#FFFFFF", // Fondo blanco (como el mockup)
+    backgroundColor: "#FFFFFF", 
     borderRadius: 25,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 16,
     borderWidth: 2,
-    borderColor: "#83c41a", // Borde verde (como el mockup)
+    borderColor: "#83c41a", 
   },
   createButtonText: {
-    color: "#83c41a", // Texto verde (como el mockup)
+    color: "#83c41a", 
     fontSize: 16,
     fontWeight: "bold",
   },
@@ -206,7 +247,7 @@ const styles = StyleSheet.create({
   },
   loginLink: {
     fontSize: 14,
-    color: "#83c41a", // Link verde (como el mockup)
+    color: "#83c41a",
     fontWeight: "bold",
   },
 });

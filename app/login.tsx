@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore"; // Importamos para verificar perfil
 import React, { useState } from "react";
 import {
   Image,
@@ -13,9 +14,9 @@ import {
 } from "react-native";
 
 // Importamos el componente que creamos arriba
-// Si te marca error aquí, revisa que la ruta '../components/GoogleLoginModal' sea correcta
 import GoogleLoginModal from "../src/components/GoogleLoginModal";
-import { auth, googleProvider } from "./config/firebaseConfig";
+// IMPORTANTE: Exporta 'db' desde tu config
+import { auth, db, googleProvider } from "./config/firebaseConfig"; 
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function LoginScreen() {
 
   // Estados para controlar la animación
   const [modalVisible, setModalVisible] = useState(false);
-  const [loginStatus, setLoginStatus] = useState('loading'); 
+  const [loginStatus, setLoginStatus] = useState<'loading' | 'success'>('loading'); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -33,6 +34,7 @@ export default function LoginScreen() {
     }
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      // En login normal, asumimos que el registro ya creó el perfil.
       router.push("/(tabs)/home");
     } catch (error: any) {
       Alert.alert("Error al iniciar sesión", error.message);
@@ -46,8 +48,26 @@ export default function LoginScreen() {
 
     try {
       // 2. Intentamos el login
-      await signInWithPopup(auth, googleProvider);
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
       
+      // --- VERIFICACIÓN DE SEGURIDAD PARA PERFIL ---
+      // Si un usuario nuevo entra directo con Google, creamos su perfil aquí
+      const userDocRef = doc(db, "users", user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (!userDoc.exists()) {
+          await setDoc(userDocRef, {
+              nickname: user.displayName || "Usuario Google",
+              email: user.email,
+              photoURL: user.photoURL || "",
+              phone: "",
+              createdAt: new Date(),
+          });
+          console.log("Perfil de Google creado en Firestore");
+      }
+      // ---------------------------------------------
+
       // 3. Si funciona, cambiamos a modo 'Éxito'
       setLoginStatus('success');
 

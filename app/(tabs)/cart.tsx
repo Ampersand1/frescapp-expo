@@ -9,16 +9,18 @@ import {
   FlatList,
   Modal,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router"; // Agregamos useNavigation
 import { collection, getDocs, limit, query } from "firebase/firestore"; 
 import { db } from "../config/firebaseConfig"; 
 import { useCart } from "../context/cartContext"; 
 
+// --- CONSTANTES ---
 const MIN_ORDER_AMOUNT = 100000; 
 
-
+// Interfaz
 interface CartItem {
   id: string;
   name: string;
@@ -31,10 +33,11 @@ interface CartItem {
 
 export default function CartScreen() {
   const router = useRouter();
+  const navigation = useNavigation(); // Hook para manipular la navegación
   
   const { cart, addToCart, removeFromCart, clearCart } = useCart(); 
   
-
+  // Calculamos Total
   const totalPrice = useMemo(() => {
     return cart.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
   }, [cart]);
@@ -43,10 +46,22 @@ export default function CartScreen() {
   const [upsellProducts, setUpsellProducts] = useState<any[]>([]);
   const [loadingUpsell, setLoadingUpsell] = useState(true);
 
-  
   const isMinMet = totalPrice >= MIN_ORDER_AMOUNT;
 
-  
+  // 1. OCULTAR LA BARRA DE NAVEGACIÓN (TABS) AL ENTRAR AL CARRITO
+  useEffect(() => {
+    navigation.setOptions({
+      tabBarStyle: { display: "none" }, // Oculta el tab bar
+    });
+    // Al salir del carrito, podrías querer restaurarla, pero Expo Router suele manejarlo al cambiar de pantalla.
+    return () => {
+      navigation.setOptions({
+        tabBarStyle: undefined, // Restaura el valor por defecto
+      });
+    };
+  }, [navigation]);
+
+  // Cargar productos sugeridos
   useEffect(() => {
     const fetchUpsellProducts = async () => {
       try {
@@ -85,14 +100,19 @@ export default function CartScreen() {
     addToCart({ ...item, quantity: 1 });
   };
 
+  // 2. CORRECCIÓN LÓGICA RESTAR
   const handleDecrease = (item: any) => {
     if (item.quantity > 1) {
+      // Enviamos quantity: -1. 
+      // IMPORTANTE: Asegúrate que en tu cartContext, la función addToCart sume este valor.
+      // ej: newQty = currentQty + action.quantity (donde action es -1)
       addToCart({ ...item, quantity: -1 }); 
     } else {
       removeFromCart(item.id);
     }
   };
 
+  // --- CARRITO VACÍO ---
   if (!cart || cart.length === 0) {
     return (
       <View style={styles.container}>
@@ -107,23 +127,6 @@ export default function CartScreen() {
               <Text style={styles.goToStoreText}>Ir a comprar</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.upsellSection}>
-             <Text style={styles.upsellTitle}>Productos en descuento</Text>
-             {loadingUpsell ? (
-               <ActivityIndicator color="#83c41a" />
-             ) : (
-               <FlatList 
-                  data={upsellProducts}
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  keyExtractor={item => item.id}
-                  renderItem={({item}) => (
-                    <UpsellCard item={item} onAdd={() => addToCart({...item, quantity: 1})} />
-                  )}
-               />
-             )}
-          </View>
         </ScrollView>
       </View>
     );
@@ -134,9 +137,12 @@ export default function CartScreen() {
     <View style={styles.container}>
       <Header title="Tu pedido" onBack={() => router.back()} />
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 160 }}>
+      <ScrollView 
+        contentContainerStyle={{ paddingBottom: 200 }} // MUCHO Espacio para que el footer no tape contenido
+        showsVerticalScrollIndicator={false}
+      >
         
-        {}
+        {/* Banner de Estado */}
         {!isMinMet ? (
           <View style={styles.warningBanner}>
             <Ionicons name="alert-circle-outline" size={16} color="#F57C00" />
@@ -145,17 +151,15 @@ export default function CartScreen() {
             </Text>
           </View>
         ) : (
+          // Opcional: Puedes quitar este bloque else si no quieres mostrar nada cuando ya cumple
           <View style={styles.successBanner}>
-            <Ionicons name="checkmark-circle-outline" size={16} color="#388E3C" />
-            <Text style={styles.successText}>
-              ¡Genial! Has alcanzado el monto mínimo.
-            </Text>
+             <Ionicons name="checkmark-circle-outline" size={16} color="#388E3C" />
+             <Text style={styles.successText}>Pedido mínimo completado</Text>
           </View>
         )}
 
         {/* LISTA DE PRODUCTOS */}
         <View style={styles.listContainer}>
-          {}
           {cart.map((item: any) => (
             <CartItemRow 
               key={item.id} 
@@ -172,7 +176,7 @@ export default function CartScreen() {
 
         <View style={styles.divider} />
 
-        {/* Upsell Abajo */}
+        {/* Upsell Abajo (Arreglado "Cortado") */}
         <View style={styles.upsellSection}>
             <Text style={styles.upsellTitle}>Productos en descuento</Text>
             {loadingUpsell ? (
@@ -182,6 +186,8 @@ export default function CartScreen() {
                 data={upsellProducts}
                 horizontal
                 showsHorizontalScrollIndicator={false}
+                // 3. CORRECCIÓN VISUAL: Padding horizontal en el contenedor
+                contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 10 }}
                 keyExtractor={item => item.id}
                 renderItem={({item}) => (
                   <UpsellCard item={item} onAdd={() => addToCart({...item, quantity: 1})} />
@@ -191,27 +197,27 @@ export default function CartScreen() {
         </View>
       </ScrollView>
 
-      {}
-      <View style={styles.footer}>
-        <View style={styles.totalRow}>
+      {/* 4. FOOTER FLOTANTE (Estilo Card Redondeada) */}
+      <View style={styles.footerCard}>
+        <View style={styles.totalSection}>
           <Text style={styles.totalLabel}>Total</Text>
-          {}
           <Text style={styles.totalAmount}>${totalPrice.toLocaleString()}</Text>
         </View>
 
         <TouchableOpacity 
           disabled={!isMinMet}
-          style={[styles.payButton, !isMinMet && styles.payButtonDisabled]}
+          // Cambio de color: Gris si no cumple, Verde brillante si cumple
+          style={[styles.payButton, !isMinMet ? styles.payButtonDisabled : styles.payButtonActive]}
           onPress={() => {
             console.log("Ir a pagar...");
+            // router.push("/checkout");
           }}
         >
-          <Text style={[styles.payButtonText, !isMinMet && styles.payButtonTextDisabled]}>
-            {isMinMet ? "Paga" : "Paga"}
-          </Text>
+          <Text style={styles.payButtonText}>Paga</Text>
         </TouchableOpacity>
       </View>
 
+      {/* Modal */}
       <CustomModal 
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -224,7 +230,7 @@ export default function CartScreen() {
   );
 }
 
-
+// --- SUB-COMPONENTES ---
 
 const Header = ({ title, onBack }: { title: string, onBack: () => void }) => (
   <View style={styles.header}>
@@ -245,6 +251,7 @@ const CartItemRow = ({ item, onIncrease, onDecrease }: { item: CartItem, onIncre
         <Text style={styles.itemPrice}>${item.price.toLocaleString()}</Text>
       </View>
 
+      {/* Controles tipo Píldora (Imagen 1) */}
       <View style={styles.qtyContainer}>
         <TouchableOpacity 
           style={[styles.qtyBtn, item.quantity === 1 ? styles.qtyBtnRed : styles.qtyBtnGray]} 
@@ -274,11 +281,14 @@ const UpsellCard = ({ item, onAdd }: any) => (
         <Ionicons name="add" size={18} color="#FFF" />
      </TouchableOpacity>
      <Image source={{ uri: item.imageUrl }} style={styles.upsellImage} />
-     <Text style={styles.upsellPrice}>${item.price.toLocaleString()}</Text>
-     {item.oldPrice && (
-       <Text style={styles.upsellOldPrice}>Antes ${item.oldPrice.toLocaleString()}</Text>
-     )}
-     <Text style={styles.upsellName} numberOfLines={2}>{item.name}</Text>
+     {/* Upsell recortado arreglado con estilo del contenedor */}
+     <View style={{paddingHorizontal: 4}}> 
+        <Text style={styles.upsellPrice}>${item.price.toLocaleString()}</Text>
+        {item.oldPrice && (
+          <Text style={styles.upsellOldPrice}>Antes ${item.oldPrice.toLocaleString()}</Text>
+        )}
+        <Text style={styles.upsellName} numberOfLines={2}>{item.name}</Text>
+     </View>
   </View>
 );
 
@@ -313,32 +323,38 @@ const styles = StyleSheet.create({
     width: 36, height: 36, borderRadius: 18, backgroundColor: '#EEE', justifyContent: 'center', alignItems: 'center', marginRight: 15,
   },
   headerTitle: { fontSize: 20, fontWeight: 'bold', color: '#000' },
+  
   warningBanner: { backgroundColor: '#FFE082', padding: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   warningText: { color: '#E65100', marginLeft: 8, fontSize: 12 },
-  successBanner: { backgroundColor: '#B9F6CA', padding: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
-  successText: { color: '#1B5E20', marginLeft: 8, fontSize: 12 },
+  successBanner: { backgroundColor: '#E8F5E9', padding: 10, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
+  successText: { color: '#2E7D32', marginLeft: 8, fontSize: 12 },
+
   listContainer: { padding: 20 },
   cartItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#F0F0F0', paddingBottom: 15 },
   itemImage: { width: 60, height: 60, resizeMode: 'contain', marginRight: 15 },
   itemInfo: { flex: 1 },
   itemName: { fontSize: 14, color: '#333', marginBottom: 4 },
   itemPrice: { fontSize: 16, fontWeight: 'bold', color: '#000' },
-  qtyContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 20, padding: 2 },
+  
+  qtyContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 20, padding: 2, borderWidth: 1, borderColor: '#DDD' },
   qtyBtn: { width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center' },
   qtyBtnRed: { backgroundColor: '#D32F2F' },
   qtyBtnGreen: { backgroundColor: '#00E600' },
-  qtyBtnGray: { backgroundColor: '#DDD' },
+  qtyBtnGray: { backgroundColor: '#CCC' },
   qtyText: { marginHorizontal: 10, fontWeight: 'bold', fontSize: 14 },
+  
   clearCartText: { textAlign: 'center', color: '#D32F2F', fontSize: 12, fontWeight: '600', marginBottom: 20 },
   divider: { height: 8, backgroundColor: '#FAFAFA' },
+  
   emptyStateContainer: { alignItems: 'center', marginTop: 50, marginBottom: 50 },
   emptyIconContainer: { marginBottom: 20 },
   emptyTitle: { fontSize: 16, color: '#888', marginBottom: 20 },
   goToStoreBtn: { backgroundColor: '#00E600', paddingVertical: 12, paddingHorizontal: 40, borderRadius: 25 },
   goToStoreText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  upsellSection: { padding: 20 },
-  upsellTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 15 },
-  upsellCard: { width: 140, backgroundColor: '#FFF', borderRadius: 15, padding: 10, marginRight: 15, elevation: 2, shadowColor: "#000", shadowOpacity: 0.1, shadowOffset: {width: 0, height: 2}, marginBottom: 10, position: 'relative' },
+  
+  upsellSection: { marginTop: 20, marginBottom: 100 }, // Margen inferior para que no choque con el footer
+  upsellTitle: { fontSize: 16, fontWeight: 'bold', marginBottom: 15, marginLeft: 20 },
+  upsellCard: { width: 140, backgroundColor: '#FFF', borderRadius: 15, padding: 10, marginRight: 15, elevation: 3, shadowColor: "#000", shadowOpacity: 0.1, shadowOffset: {width: 0, height: 2}, marginBottom: 10, position: 'relative' },
   yellowBadge: { position: 'absolute', top: 8, left: 8, backgroundColor: '#FFF100', borderRadius: 4, paddingHorizontal: 4, zIndex: 1 },
   badgeText: { fontSize: 10, fontWeight: 'bold' },
   addFloating: { position: 'absolute', top: -8, right: -8, backgroundColor: '#00E600', width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center', zIndex: 2, borderWidth: 2, borderColor: '#FFF' },
@@ -346,14 +362,48 @@ const styles = StyleSheet.create({
   upsellPrice: { fontSize: 14, fontWeight: 'bold' },
   upsellOldPrice: { fontSize: 10, color: '#999', textDecorationLine: 'line-through' },
   upsellName: { fontSize: 12, color: '#555', height: 32 },
-  footer: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: '#FFF', padding: 20, borderTopLeftRadius: 25, borderTopRightRadius: 25, shadowColor: "#000", shadowOffset: { width: 0, height: -2 }, shadowOpacity: 0.1, shadowRadius: 5, elevation: 10 },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-  totalLabel: { fontSize: 16, color: '#555' },
-  totalAmount: { fontSize: 20, fontWeight: 'bold' },
-  payButton: { backgroundColor: '#00E600', paddingVertical: 15, borderRadius: 30, alignItems: 'center' },
-  payButtonDisabled: { backgroundColor: '#E0E0E0' },
+
+  // --- FOOTER FLOTANTE (ESTILO CARD) ---
+  footerCard: {
+    position: 'absolute', 
+    bottom: 0, 
+    left: 0, 
+    right: 0,
+    backgroundColor: '#FFF',
+    paddingHorizontal: 25,
+    paddingVertical: 20,
+    borderTopLeftRadius: 30, 
+    borderTopRightRadius: 30,
+    shadowColor: "#000", 
+    shadowOffset: { width: 0, height: -4 }, 
+    shadowOpacity: 0.1, 
+    shadowRadius: 8, 
+    elevation: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  totalSection: {
+    flexDirection: 'column',
+  },
+  totalLabel: { fontSize: 14, color: '#666' },
+  totalAmount: { fontSize: 22, fontWeight: 'bold', color: '#000' },
+  
+  payButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 35,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: 120,
+  },
+  // Estilos dinámicos del botón
+  payButtonActive: { backgroundColor: '#4CAF50' }, // Verde Brillante (Mockup)
+  payButtonDisabled: { backgroundColor: '#D3D3D3' }, // Gris (Mockup)
+  
   payButtonText: { color: '#FFF', fontSize: 18, fontWeight: 'bold' },
-  payButtonTextDisabled: { color: '#999' },
+
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { backgroundColor: '#FFF', width: '80%', borderRadius: 20, padding: 25, alignItems: 'center', position: 'relative' },
   closeModalIcon: { position: 'absolute', top: 15, right: 15 },

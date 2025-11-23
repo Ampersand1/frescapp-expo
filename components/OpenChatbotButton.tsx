@@ -12,7 +12,7 @@ export default function OpenChatbotButton() {
       activeOpacity={0.8}
       onPress={() => router.push("/chatbot")} 
     >
-      {/* Icono centrado */}
+      {}
       <Ionicons name="chatbubble-ellipses" size={28} color="#FFF" />
     </TouchableOpacity>
   );
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: "#83c41a", // Tu verde
+    backgroundColor: "#83c41a", 
     justifyContent: "center",
     alignItems: "center",
     shadowColor: "#000",
