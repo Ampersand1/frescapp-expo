@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore"; // Importamos funciones de Firestore
+import { doc, setDoc } from "firebase/firestore"; 
 import React, { useState } from "react";
 import {
   Image,
@@ -13,7 +13,7 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
-// Asegúrate de exportar 'db' desde tu archivo de configuración
+
 import { auth, db, googleProvider } from "./config/firebaseConfig"; 
 import { signInWithPopup } from "firebase/auth";
 
@@ -36,19 +36,16 @@ export default function RegisterScreen() {
 
     setLoading(true);
     try {
-      // 1. Crear usuario en Authentication
+      
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // 2. CREACIÓN DINÁMICA DEL PERFIL EN FIRESTORE
-      // Usamos el UID del usuario como ID del documento
       await setDoc(doc(db, "users", user.uid), {
-        nickname: "Usuario Nuevo", // Valor por defecto
+        nickname: "Usuario Nuevo", 
         email: user.email,
         photoURL: "",
         phone: "",
         createdAt: new Date(),
-        // No necesitamos crear 'addresses' aquí, se crea sola cuando guardes la primera dirección
       });
 
       console.log("Perfil creado exitosamente en Firestore");
@@ -61,15 +58,12 @@ export default function RegisterScreen() {
     }
   };
 
-  // Manejo de registro con Google (para asegurar que también cree el perfil)
   const handleGoogle = async () => {
     try {
-        // Nota: signInWithPopup suele ser para web. En móvil nativo se usa GoogleSignin.
-        // Si estás en Expo Go / Web, esto funciona.
         const result = await signInWithPopup(auth, googleProvider);
         const user = result.user;
 
-        // Intentamos crear el documento SOLO si no existe (merge: true ayuda a no sobrescribir si ya existe)
+       
         await setDoc(doc(db, "users", user.uid), {
             nickname: user.displayName || "Usuario Google",
             email: user.email,

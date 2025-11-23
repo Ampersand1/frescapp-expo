@@ -1,9 +1,7 @@
 import { initializeApp } from "firebase/app";
-// CAMBIO IMPORTANTE: Usamos getAuth en lugar de initializeAuth manual
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
-// Mantenemos el import para asegurar que el paquete esté disponible
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const firebaseConfig = {
@@ -16,19 +14,13 @@ const firebaseConfig = {
   measurementId: "G-B97XZCTM62"
 };
 
-// 1. Inicializar la App
+
 export const app = initializeApp(firebaseConfig);
 
-// 2. Inicializar Auth (CORRECCIÓN)
-// Al usar getAuth(app) en React Native con AsyncStorage instalado, 
-// la persistencia se configura automáticamente sin causar el error.
 export const auth = getAuth(app);
 
-// 3. Proveedor de Google
 export const googleProvider = new GoogleAuthProvider();
 
-// 4. Base de Datos
 export const db = getFirestore(app);
 
-// 5. Storage
 export const storage = getStorage(app);

@@ -1,93 +1,128 @@
-import React, { createContext, ReactNode, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, onAuthStateChanged } from "firebase/auth"; 
 
-export interface CartItem {
+interface CartItem {
   id: string;
   name: string;
   price: number;
-  imageUrl: string;
   quantity: number;
+  imageUrl: string;
+  category: string;
+  stock?: number;
 }
 
-export interface CartContextType {
-  cartItems: CartItem[];
-  cart: CartItem[];               
-  total: number;
 
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
-  increaseQuantity: (id: string) => void;
-  decreaseQuantity: (id: string) => void;
-
-  removeFromCart: (id: string) => void; 
+interface CartContextType {
+  cart: CartItem[];
+  addToCart: (item: CartItem) => void;
+  removeFromCart: (id: string) => void;
+  decreaseCart: (id: string) => void;
   clearCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const auth = getAuth(); 
 
-export function CartProvider({ children }: { children: ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+export const CartProvider = ({ children }: { children: React.ReactNode }) => {
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false); 
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        
+        setUserId(user.uid);
+        await loadCart(user.uid);
+      } else {
+        
+        setUserId(null);
+        setCart([]); 
+      }
+      setIsInitialized(true);
+    });
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
-    setCartItems((prev) => {
-      const existing = prev.find((p) => p.id === item.id);
+    return () => unsubscribe();
+  }, []);
 
-      if (existing) {
-        return prev.map((p) =>
-          p.id === item.id ? { ...p, quantity: p.quantity + 1 } : p
+  
+  const loadCart = async (uid: string) => {
+    try {
+      
+      const savedCart = await AsyncStorage.getItem(`cart_${uid}`);
+      if (savedCart) {
+        setCart(JSON.parse(savedCart));
+      } else {
+        setCart([]); 
+      }
+    } catch (error) {
+      console.log("Error cargando carrito:", error);
+    }
+  };
+
+  
+  useEffect(() => {
+    const saveCart = async () => {
+      
+      if (isInitialized && userId) {
+        try {
+          await AsyncStorage.setItem(`cart_${userId}`, JSON.stringify(cart));
+        } catch (error) {
+          console.log("Error guardando carrito:", error);
+        }
+      }
+    };
+    saveCart();
+  }, [cart, userId, isInitialized]);
+
+ 
+
+  const addToCart = (item: CartItem) => {
+    setCart((prevCart) => {
+      const existingItem = prevCart.find((i) => i.id === item.id);
+      if (existingItem) {
+        return prevCart.map((i) =>
+          i.id === item.id
+            ? { ...i, quantity: i.quantity + (item.quantity || 1) }
+            : i
         );
       }
-
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prevCart, { ...item, quantity: item.quantity || 1 }];
     });
   };
 
-  const increaseQuantity = (id: string) => {
-    setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
-      )
-    );
+  const decreaseCart = (id: string) => {
+    setCart((prevCart) => {
+      return prevCart.map((item) => {
+        if (item.id === id) {
+          return { ...item, quantity: Math.max(1, item.quantity - 1) };
+        }
+        return item;
+      });
+    });
   };
 
-  const decreaseQuantity = (id: string) => {
-    setCartItems((prev) =>
-      prev
-        .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+  const removeFromCart = (id: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  // ✔ Compatibilidad con CartScreen
-  const removeFromCart = (id: string) => decreaseQuantity(id);
-
-  const clearCart = () => setCartItems([]);
+  const clearCart = () => {
+    setCart([]);
+  };
 
   return (
     <CartContext.Provider
-      value={{
-        cartItems,
-        cart: cartItems,        
-        total,
-        addToCart,
-        increaseQuantity,
-        decreaseQuantity,
-        removeFromCart,        
-        clearCart,
-      }}
+      value={{ cart, addToCart, removeFromCart, decreaseCart, clearCart }}
     >
       {children}
     </CartContext.Provider>
   );
-}
+};
 
 export const useCart = () => {
-  const ctx = useContext(CartContext);
-  if (!ctx) throw new Error("useCart must be used inside <CartProvider>");
-  return ctx;
+  const context = useContext(CartContext);
+  if (!context) throw new Error("useCart must be used within a CartProvider");
+  return context;
 };

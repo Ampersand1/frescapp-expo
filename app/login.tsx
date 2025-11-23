@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore"; // Importamos para verificar perfil
+import { doc, getDoc, setDoc } from "firebase/firestore"; 
 import React, { useState } from "react";
 import {
   Image,
@@ -13,9 +13,9 @@ import {
   Alert,
 } from "react-native";
 
-// Importamos el componente que creamos arriba
+
 import GoogleLoginModal from "../src/components/GoogleLoginModal";
-// IMPORTANTE: Exporta 'db' desde tu config
+
 import { auth, db, googleProvider } from "./config/firebaseConfig"; 
 
 export default function LoginScreen() {
@@ -23,7 +23,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // Estados para controlar la animación
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [loginStatus, setLoginStatus] = useState<'loading' | 'success'>('loading'); 
 
@@ -34,7 +34,7 @@ export default function LoginScreen() {
     }
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      // En login normal, asumimos que el registro ya creó el perfil.
+      
       router.push("/(tabs)/home");
     } catch (error: any) {
       Alert.alert("Error al iniciar sesión", error.message);
@@ -42,17 +42,16 @@ export default function LoginScreen() {
   };
 
   const handleGoogle = async () => {
-    // 1. Activamos el modal en modo 'Cargando'
+   
     setLoginStatus('loading');
     setModalVisible(true);
 
     try {
-      // 2. Intentamos el login
+     
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       
-      // --- VERIFICACIÓN DE SEGURIDAD PARA PERFIL ---
-      // Si un usuario nuevo entra directo con Google, creamos su perfil aquí
+
       const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
 
@@ -66,12 +65,10 @@ export default function LoginScreen() {
           });
           console.log("Perfil de Google creado en Firestore");
       }
-      // ---------------------------------------------
 
-      // 3. Si funciona, cambiamos a modo 'Éxito'
+
       setLoginStatus('success');
 
-      // 4. Esperamos 1.5 segundos viendo el check verde antes de cambiar de pantalla
       setTimeout(() => {
         setModalVisible(false);
         router.push("/(tabs)/home");
@@ -86,7 +83,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       
-      {/* Renderizamos el componente de animación aquí */}
+      {}
       <GoogleLoginModal visible={modalVisible} status={loginStatus} />
 
       <View style={styles.container}>
