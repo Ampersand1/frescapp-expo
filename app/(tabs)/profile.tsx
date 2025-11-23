@@ -29,12 +29,10 @@ import {
   deleteDoc,
   serverTimestamp
 } from 'firebase/firestore';
-
 import { db } from '../../src/services/firebase';
 
 const auth = getAuth();
 const { width, height } = Dimensions.get('window');
-
 
 interface UserProfileData {
   nickname?: string;
@@ -53,18 +51,15 @@ export default function ProfileScreen() {
   const router = useRouter();
   const user = auth.currentUser;
 
- 
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState<UserProfileData | null>(null);
   
- 
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [tempNickname, setTempNickname] = useState('');
   const [tempPhone, setTempPhone] = useState('');
   const [selectedImageUri, setSelectedImageUri] = useState<string | null>(null);
   
- 
   const [addressModalVisible, setAddressModalVisible] = useState(false);
   const [userAddresses, setUserAddresses] = useState<UserAddress[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(false);
@@ -73,22 +68,17 @@ export default function ProfileScreen() {
   const [newAddrLine, setNewAddrLine] = useState('');
   const [savingAddress, setSavingAddress] = useState(false);
 
- 
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
   const [addrToDelete, setAddrToDelete] = useState<string | null>(null);
 
-  
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-  
   const [infoModalVisible, setInfoModalVisible] = useState(false);
   const [infoData, setInfoData] = useState({ title: '', content: '', icon: '' });
 
-  
-  const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false); 
-  const [loggingOut, setLoggingOut] = useState(false); 
+  const [logoutConfirmVisible, setLogoutConfirmVisible] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  
   useEffect(() => {
     const fetchUserData = async () => {
       if (!user) {
@@ -102,9 +92,8 @@ export default function ProfileScreen() {
         if (docSnap.exists()) {
           setUserData(docSnap.data() as UserProfileData);
         } else {
-          
           const initialData: UserProfileData = {
-            email: user.email ?? undefined, 
+            email: user.email ?? undefined,
             nickname: user.displayName || 'Invitado',
             phone: '',
             photoURL: user.photoURL || '',
@@ -113,7 +102,7 @@ export default function ProfileScreen() {
           setUserData(initialData);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error(error);
       } finally {
         setLoading(false);
       }
@@ -121,14 +110,11 @@ export default function ProfileScreen() {
     fetchUserData();
   }, [user]);
 
-  
   const pickImage = async () => {
     try {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (status !== 'granted') {
-        console.log('Permiso denegado');
-        return;
-      }
+      if (status !== 'granted') return;
+      
       let result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -136,6 +122,7 @@ export default function ProfileScreen() {
         quality: 0.2, 
         base64: true,
       });
+      
       if (!result.canceled && result.assets && result.assets[0].base64) {
         const imageBase64 = `data:image/jpeg;base64,${result.assets[0].base64}`;
         setSelectedImageUri(imageBase64);
@@ -145,9 +132,8 @@ export default function ProfileScreen() {
     }
   };
 
-  
   const handleSaveProfile = async () => {
-    if (!user) return; 
+    if (!user) return;
     if (tempNickname.trim().length < 3) return;
     
     setSavingProfile(true);
@@ -161,7 +147,6 @@ export default function ProfileScreen() {
         photoURL: finalPhotoURL,
       });
 
-      
       setUserData(prev => prev ? ({ 
         ...prev, 
         nickname: tempNickname, 
@@ -172,15 +157,14 @@ export default function ProfileScreen() {
       setEditModalVisible(false);
       showSuccessMessage();
     } catch (error) {
-      console.log("Error guardando perfil");
+      console.log(error);
     } finally {
       setSavingProfile(false);
     }
   };
 
-  
   const fetchAddresses = async () => {
-    if (!user) return; 
+    if (!user) return;
     setAddressModalVisible(true);
     setLoadingAddresses(true);
     setShowAddAddressForm(false);
@@ -197,7 +181,7 @@ export default function ProfileScreen() {
   };
 
   const handleSaveAddress = async () => {
-    if (!user) return; 
+    if (!user) return;
     if (!newAddrName.trim() || !newAddrLine.trim()) return;
     setSavingAddress(true);
     try {
@@ -213,7 +197,7 @@ export default function ProfileScreen() {
       setShowAddAddressForm(false);
       showSuccessMessage();
     } catch (error) {
-      console.log("Error guardando dirección");
+      console.log(error);
     } finally {
       setSavingAddress(false);
     }
@@ -225,18 +209,17 @@ export default function ProfileScreen() {
   };
 
   const confirmDeleteAddress = async () => {
-    if (!user || !addrToDelete) return; 
+    if (!user || !addrToDelete) return;
     try {
       await deleteDoc(doc(db, `users/${user.uid}/addresses`, addrToDelete));
       setUserAddresses(prev => prev.filter(item => item.id !== addrToDelete));
       setDeleteModalVisible(false);
       setAddrToDelete(null);
     } catch (e) { 
-      console.log("Error borrando");
+      console.log(e);
     }
   };
 
- 
   const requestLogout = () => {
     setLogoutConfirmVisible(true);
   };
@@ -261,7 +244,6 @@ export default function ProfileScreen() {
     setTimeout(() => setSuccessModalVisible(false), 2000);
   };
 
-  // --- 6. INFO ---
   const openInfoModal = (type: 'contact' | 'terms') => {
     if (type === 'contact') {
       setInfoData({
@@ -283,8 +265,6 @@ export default function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      
-      {}
       <View style={styles.headerBackground}>
         <Text style={styles.headerTitle}>Mi Perfil</Text>
         <View style={styles.decorativeCircle} />
@@ -294,8 +274,6 @@ export default function ProfileScreen() {
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
       >
-        
-        {}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
             {userData?.photoURL ? (
@@ -320,7 +298,6 @@ export default function ProfileScreen() {
           {userData?.phone ? <Text style={styles.phoneText}>{userData.phone}</Text> : null}
         </View>
 
-        {}
         <View style={styles.menuContainer}>
           <Text style={styles.sectionHeader}>CUENTA</Text>
           <View style={styles.menuGroup}>
@@ -356,17 +333,12 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        {}
         <TouchableOpacity style={styles.logoutButton} onPress={requestLogout}>
           <Ionicons name="log-out-outline" size={20} color="#666" style={{ marginRight: 8 }} />
           <Text style={styles.logoutButtonText}>Cerrar sesión</Text>
         </TouchableOpacity>
-
       </ScrollView>
 
-      {}
-
-      {}
       <Modal animationType="fade" transparent={true} visible={infoModalVisible} onRequestClose={() => setInfoModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.infoModalCard}>
@@ -386,7 +358,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {}
       <Modal animationType="slide" visible={editModalVisible} onRequestClose={() => setEditModalVisible(false)}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} style={{ flex: 1 }}>
           <View style={styles.modalContainer}>
@@ -415,7 +386,6 @@ export default function ProfileScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {}
       <Modal animationType="slide" visible={addressModalVisible} onRequestClose={() => setAddressModalVisible(false)}>
         <View style={styles.modalContainer}>
           <View style={styles.modalHeader}>
@@ -458,7 +428,6 @@ export default function ProfileScreen() {
           )}
         </View>
 
-        {}
         <Modal animationType="fade" transparent={true} visible={deleteModalVisible} onRequestClose={() => setDeleteModalVisible(false)}>
            <View style={styles.modalOverlay}>
               <View style={styles.alertCard}>
@@ -475,10 +444,8 @@ export default function ProfileScreen() {
               </View>
            </View>
         </Modal>
-
       </Modal>
 
-      {}
       <Modal animationType="fade" transparent={true} visible={successModalVisible}>
         <View style={styles.toastOverlay}>
           <View style={styles.toastContent}>
@@ -488,7 +455,6 @@ export default function ProfileScreen() {
         </View>
       </Modal>
 
-      {}
       <Modal animationType="fade" transparent={true} visible={logoutConfirmVisible} onRequestClose={() => setLogoutConfirmVisible(false)}>
          <View style={styles.modalOverlay}>
             <View style={styles.alertCard}>
@@ -506,7 +472,6 @@ export default function ProfileScreen() {
          </View>
       </Modal>
 
-      {}
       <Modal animationType="fade" transparent={true} visible={loggingOut}>
          <View style={styles.logoutOverlay}>
             <View style={styles.logoutContent}>
@@ -515,7 +480,6 @@ export default function ProfileScreen() {
             </View>
          </View>
       </Modal>
-
     </View>
   );
 }
@@ -534,7 +498,6 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F8F9FA' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-  
   headerBackground: {
     backgroundColor: '#83c41a',
     height: height * 0.18, 
@@ -559,14 +522,12 @@ const styles = StyleSheet.create({
   },
   headerTitle: { color: '#FFF', fontSize: 18, fontWeight: '700' },
 
-  
   scrollContent: { 
     paddingTop: height * 0.14, 
-    paddingBottom: 150, 
+    paddingBottom: 150,
     paddingHorizontal: 20 
   },
 
-  
   profileCard: {
     backgroundColor: '#FFF',
     borderRadius: 24,
@@ -588,7 +549,6 @@ const styles = StyleSheet.create({
   emailText: { fontSize: 13, color: '#888', marginTop: 4 },
   phoneText: { fontSize: 13, color: '#666', marginTop: 2 },
 
-  
   menuContainer: { marginBottom: 20 },
   sectionHeader: { fontSize: 12, fontWeight: '800', color: '#B0B0B0', marginBottom: 10, marginLeft: 10, letterSpacing: 0.5 },
   menuGroup: { backgroundColor: '#FFF', borderRadius: 20, overflow: 'hidden', marginBottom: 20 },
@@ -596,11 +556,9 @@ const styles = StyleSheet.create({
   iconContainer: { width: 30, alignItems: 'center', marginRight: 10 },
   menuText: { fontSize: 15, color: '#333', fontWeight: '500' },
 
-  
   logoutButton: { backgroundColor: '#FFF', borderRadius: 16, padding: 18, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#EEE' },
   logoutButtonText: { color: '#666', fontWeight: '600' },
 
-  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
   infoModalCard: { backgroundColor: '#FFF', borderRadius: 24, padding: 25, width: '100%', maxHeight: '80%' },
   infoIconCircle: { backgroundColor: '#E8F5D5', padding: 15, borderRadius: 40, marginBottom: 15 },
@@ -609,7 +567,6 @@ const styles = StyleSheet.create({
   closeInfoBtn: { backgroundColor: '#83c41a', paddingVertical: 12, borderRadius: 25, alignItems: 'center', width: '100%' },
   closeInfoText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
 
-  
   modalContainer: { flex: 1, backgroundColor: '#FFF', padding: 20 },
   modalHeader: { flexDirection: 'row', alignItems: 'center', marginTop: 10, marginBottom: 20 },
   modalTitleText: { fontSize: 18, fontWeight: 'bold', marginLeft: 15 },
@@ -622,7 +579,6 @@ const styles = StyleSheet.create({
   saveButton: { backgroundColor: '#83c41a', borderRadius: 12, padding: 15, alignItems: 'center', marginTop: 10 },
   saveButtonText: { color: '#FFF', fontWeight: 'bold' },
 
-  
   addNewAddrBtn: { flexDirection: 'row', alignItems: 'center', padding: 15, marginBottom: 10 },
   addNewAddrText: { color: '#83c41a', fontWeight: 'bold', marginLeft: 10 },
   addressItem: { flexDirection: 'row', justifyContent:'space-between', alignItems:'center', padding: 15, backgroundColor:'#F9F9F9', borderRadius: 12, marginBottom: 10 },
@@ -632,7 +588,6 @@ const styles = StyleSheet.create({
   smallSaveBtn: { flex: 1, backgroundColor: '#83c41a', padding: 12, borderRadius: 10, alignItems: 'center', marginLeft: 5 },
   emptyText: { textAlign: 'center', color: '#999', marginTop: 20 },
 
-  
   alertCard: { backgroundColor: '#FFF', width: width * 0.85, padding: 25, borderRadius: 20, alignItems: 'center', shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
   alertTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#333' },
   alertMessage: { fontSize: 14, color: '#666', marginBottom: 20, textAlign: 'center' },
@@ -642,12 +597,10 @@ const styles = StyleSheet.create({
   alertBtnTextCancel: { fontWeight: 'bold', color: '#555' },
   alertBtnTextDelete: { fontWeight: 'bold', color: '#FFF' },
 
-  
   toastOverlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.1)' },
   toastContent: { backgroundColor: '#333', padding: 20, borderRadius: 15, alignItems: 'center', flexDirection: 'row' },
   toastText: { color: '#FFF', marginLeft: 10, fontWeight: 'bold' },
 
-  
   logoutOverlay: { flex: 1, backgroundColor: 'rgba(255,255,255,0.9)', justifyContent: 'center', alignItems: 'center' },
   logoutContent: { alignItems: 'center' },
   logoutText: { marginTop: 15, fontSize: 16, color: '#83c41a', fontWeight: 'bold' }

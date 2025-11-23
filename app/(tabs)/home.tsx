@@ -11,7 +11,8 @@ import {
   View,
   Modal,
   ActivityIndicator,
-  Dimensions
+  Dimensions,
+  Platform
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -19,8 +20,9 @@ import { db } from "../config/firebaseConfig";
 import { useCart } from "../context/cartContext";
 import OpenChatbotButton from "../../components/OpenChatbotButton"; 
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 const MIN_ORDER_AMOUNT = 100000;
+const BOTTOM_TAB_HEIGHT = Platform.OS === 'ios' ? 90 : 70;
 
 interface Product {
   id: string;
@@ -45,12 +47,10 @@ export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [search, setSearch] = useState("");
   
-
   const [miniCartVisible, setMiniCartVisible] = useState(false);
   const [isLoadingCart, setIsLoadingCart] = useState(false);
 
   const { cart, addToCart, decreaseCart, removeFromCart } = useCart();
-
 
   const totalPrice = useMemo(() => cart.reduce((acc, item) => acc + (item.price * item.quantity), 0), [cart]);
   const totalItems = useMemo(() => cart.reduce((acc, item) => acc + item.quantity, 0), [cart]);
@@ -73,7 +73,7 @@ export default function Home() {
         });
         setProducts(data);
       } catch (e) {
-        console.log("Error al cargar productos:", e);
+        console.log(e);
       }
     };
     fetchProducts();
@@ -92,14 +92,13 @@ export default function Home() {
     }),
   }));
 
- 
   const goToFullCart = () => {
     setMiniCartVisible(false);
-    setIsLoadingCart(true); 
+    setIsLoadingCart(true);
     setTimeout(() => {
       setIsLoadingCart(false);
       router.push("/cart");
-    }, 1500); 
+    }, 1500);
   };
 
   return (
@@ -107,9 +106,8 @@ export default function Home() {
       <ScrollView
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 200 }} 
+        contentContainerStyle={{ paddingBottom: BOTTOM_TAB_HEIGHT + 120 }} 
       >
-        {}
         <View style={styles.headerContainer}>
           <Image
             source={require("../assets/images/logo44.png")}
@@ -118,7 +116,6 @@ export default function Home() {
           />
         </View>
 
-        {}
         <View style={styles.searchContainer}>
           <Ionicons name="search-outline" size={20} color="#666" style={styles.searchIcon} />
           <TextInput
@@ -130,7 +127,6 @@ export default function Home() {
           />
         </View>
 
-        {}
         <View style={styles.categoriesSection}>
           <Text style={styles.sectionTitle}>Categorias</Text>
           <FlatList
@@ -150,7 +146,6 @@ export default function Home() {
           />
         </View>
 
-        {}
         <View style={styles.promoWrapper}>
           <View style={styles.promoBackground}>
             <View style={styles.promoLeftContent}>
@@ -169,7 +164,6 @@ export default function Home() {
           <Text style={styles.promoProductLabel}>Pimentón Maduración Mixta</Text>
         </View>
 
-        {/* LISTAS DE PRODUCTOS */}
         {groupedProducts.map((group) =>
             group.products.length > 0 && (
               <View key={group.category} style={styles.productSection}>
@@ -200,14 +194,10 @@ export default function Home() {
         )}
       </ScrollView>
 
-      {}
-
-      {}
       <View style={styles.chatbotContainer}>
         <OpenChatbotButton />
       </View>
 
-      {}
       <TouchableOpacity 
         style={styles.floatingCartBtn} 
         onPress={() => setMiniCartVisible(true)}
@@ -221,12 +211,10 @@ export default function Home() {
         )}
       </TouchableOpacity>
 
-      {}
       <Modal visible={miniCartVisible} transparent animationType="slide" onRequestClose={() => setMiniCartVisible(false)}>
          <TouchableOpacity style={styles.miniCartOverlay} activeOpacity={1} onPress={() => setMiniCartVisible(false)}>
             <TouchableOpacity activeOpacity={1} style={styles.miniCartContent}>
                
-               {}
                <View style={styles.miniHeader}>
                   <View style={{flexDirection:'row', alignItems:'center'}}>
                      <TouchableOpacity onPress={() => setMiniCartVisible(false)}>
@@ -244,7 +232,6 @@ export default function Home() {
                   </TouchableOpacity>
                </View>
 
-               {}
                <View style={styles.miniListContainer}>
                   {cart.length === 0 ? (
                      <Text style={styles.emptyText}>El carrito está vacío.</Text>
@@ -261,7 +248,6 @@ export default function Home() {
                                  <Text style={styles.miniItemPrice}>${item.price.toLocaleString()}</Text>
                               </View>
                               
-                              {}
                               <View style={styles.miniControls}>
                                  <TouchableOpacity 
                                     onPress={() => item.quantity > 1 ? decreaseCart(item.id) : removeFromCart(item.id)}
@@ -284,9 +270,7 @@ export default function Home() {
                   )}
                </View>
 
-               {}
                <View>
-                  {}
                   <View style={[styles.minOrderBanner, isMinMet ? {backgroundColor:'#B9F6CA'} : {backgroundColor:'#FFE0B2'}]}>
                      <Ionicons 
                         name={isMinMet ? "checkmark-circle-outline" : "alert-circle-outline"} 
@@ -308,7 +292,6 @@ export default function Home() {
          </TouchableOpacity>
       </Modal>
 
-      {}
       <Modal visible={isLoadingCart} transparent animationType="fade">
          <View style={styles.loadingOverlay}>
             <View style={styles.loadingCard}>
@@ -322,7 +305,6 @@ export default function Home() {
   );
 }
 
-// Componente Tarjeta
 function ProductCard({ item, categoryLabel, currentQty, onAdd, onRemove, onDelete }: any) {
   const handleDecrease = () => {
     if (currentQty > 1) onRemove(); else onDelete();
@@ -362,7 +344,7 @@ const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: "#FAFAFA" },
   scrollContainer: { flex: 1, paddingHorizontal: 16 },
 
-  headerContainer: { marginTop: 20, marginBottom: 15, alignItems: "flex-start", paddingLeft: 4, width: '100%' },
+  headerContainer: { marginTop: height * 0.05, marginBottom: 15, alignItems: "flex-start", paddingLeft: 4, width: '100%' },
   logo: { width: 140, height: 40 },
 
   searchContainer: {
@@ -375,13 +357,13 @@ const styles = StyleSheet.create({
 
   categoriesSection: { marginBottom: 20 },
   sectionTitle: { fontSize: 19, fontWeight: "bold", color: "#111", marginBottom: 15, paddingLeft: 4 },
-  categoryItem: { alignItems: "center", marginRight: 18, width: 70 },
+  categoryItem: { alignItems: "center", marginRight: 18, width: width * 0.18 },
   categoryCircle: {
-    width: 62, height: 62, borderRadius: 31, backgroundColor: "#FFF",
+    width: width * 0.16, height: width * 0.16, borderRadius: (width * 0.16) / 2, backgroundColor: "#FFF",
     justifyContent: "center", alignItems: "center", marginBottom: 8,
     borderWidth: 1, borderColor: "#F0F0F0", elevation: 2,
   },
-  categoryImage: { width: 38, height: 38, resizeMode: "contain" },
+  categoryImage: { width: '60%', height: '60%', resizeMode: "contain" },
   categoryLabel: { fontSize: 11, color: "#444", textAlign: "center", fontWeight: '500' },
 
   promoWrapper: { marginBottom: 25, height: 170, position: "relative", marginTop: 10 },
@@ -427,69 +409,56 @@ const styles = StyleSheet.create({
   qtyBtn: { padding: 5, width: 30, alignItems: 'center' },
   qtyText: { fontSize: 16, fontWeight: '700', color: '#333' },
 
-  
-  
- 
   chatbotContainer: {
     position: "absolute",
-    bottom: 100, 
+    bottom: BOTTOM_TAB_HEIGHT + 10, 
     right: 20,
     zIndex: 999,
   },
 
- 
   floatingCartBtn: {
     position: "absolute",
-    bottom: 170, 
+    bottom: BOTTOM_TAB_HEIGHT + 80, 
     right: 20,
     backgroundColor: "#FFF",
     width: 60, height: 60,
     borderRadius: 30,
     justifyContent: "center", alignItems: "center",
     elevation: 10, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.25, shadowRadius: 5,
-    zIndex: 1000,
+    zIndex: 1000, 
     borderWidth: 1, borderColor: '#FAFAFA'
   },
   floatingBadge: { position: "absolute", top: -2, right: -2, backgroundColor: '#00E600', width: 22, height: 22, borderRadius: 11, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: '#FFF' },
   badgeText: { color: '#FFF', fontSize: 10, fontWeight: 'bold' },
-
 
   miniCartOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
   miniCartContent: { 
     backgroundColor: '#FFF', 
     borderTopLeftRadius: 25, borderTopRightRadius: 25, 
     padding: 20, paddingBottom: 30,
-    maxHeight: height * 0.7,
+    maxHeight: height * 0.7, 
     shadowColor: "#000", shadowOffset: { width: 0, height: -5 }, shadowOpacity: 0.1, shadowRadius: 10, elevation: 20
   },
   miniHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   miniTitle: { fontSize: 22, fontWeight: 'bold', marginLeft: 10, color: '#333' },
-  
   miniGoCartBtn: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, elevation: 2 },
   btnActive: { backgroundColor: '#00E600' },
   btnDisabled: { backgroundColor: '#DDD' },
   miniGoCartText: { color: '#FFF', fontWeight: 'bold', fontSize: 14 },
-
-  miniListContainer: { maxHeight: 300, marginBottom: 20 },
+  miniListContainer: { maxHeight: height * 0.4, marginBottom: 20 },
   emptyText: { textAlign: 'center', color: '#999', marginVertical: 20 },
-  
   miniItemRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 15, borderBottomWidth: 1, borderBottomColor: '#F5F5F5', paddingBottom: 10 },
   miniItemImg: { width: 50, height: 50, resizeMode: 'contain', marginRight: 5 },
   miniItemName: { fontSize: 14, fontWeight: '600', color: '#333', marginBottom: 4 },
   miniItemPrice: { fontSize: 14, fontWeight: 'bold', color: '#000' },
-  
   miniControls: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F9F9F9', borderRadius: 15, padding: 2, borderWidth: 1, borderColor: '#EEE' },
   miniCtrlBtn: { width: 26, height: 26, borderRadius: 13, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#DDD' },
   miniCtrlText: { marginHorizontal: 10, fontWeight: 'bold', fontSize: 14 },
-
   minOrderBanner: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 8, borderRadius: 8, marginBottom: 15 },
   minOrderText: { marginLeft: 8, fontSize: 12, fontWeight: '600' },
-
   miniTotalRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 10, borderTopWidth: 1, borderTopColor: '#EEE' },
   totalLabel: { fontSize: 18, fontWeight: 'bold', color: '#333' },
   totalValue: { fontSize: 22, fontWeight: 'bold', color: '#000' },
-
-  
   loadingOverlay: { flex: 1, backgroundColor: 'rgba(255,255,255,0.8)', justifyContent: 'center', alignItems: 'center' },
   loadingCard: { backgroundColor: '#FFF', padding: 25, borderRadius: 20, alignItems: 'center', elevation: 5, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
 });

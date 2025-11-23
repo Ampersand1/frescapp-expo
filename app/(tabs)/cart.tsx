@@ -24,7 +24,6 @@ import { db } from "../config/firebaseConfig";
 import { useCart } from "../context/cartContext"; 
 import OpenChatbotButton from "../../components/OpenChatbotButton"; 
 
-
 const { width, height } = Dimensions.get('window');
 
 if (Platform.OS === 'android') {
@@ -52,36 +51,30 @@ export default function CartScreen() {
   
   const { cart, addToCart, removeFromCart, clearCart, decreaseCart } = useCart(); 
   
- 
   const [checkoutVisible, setCheckoutVisible] = useState(false);
   const [successVisible, setSuccessVisible] = useState(false);
   const [processingPayment, setProcessingPayment] = useState(false);
-  
   
   const [addresses, setAddresses] = useState<any[]>([]);
   const [loadingAddresses, setLoadingAddresses] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState<string | null>(null);
 
-  
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardDate, setCardDate] = useState('');
   const [cardCVC, setCardCVC] = useState('');
   
-  
   const [upsellProducts, setUpsellProducts] = useState<any[]>([]);
   const [loadingUpsell, setLoadingUpsell] = useState(true);
   const [clearModalVisible, setClearModalVisible] = useState(false);
 
-  
   const totalPrice = useMemo(() => {
     return cart.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0);
   }, [cart]);
 
   const isMinMet = totalPrice >= MIN_ORDER_AMOUNT;
 
-  
   useEffect(() => {
     const fetchAddresses = async () => {
       if (!user) {
@@ -101,7 +94,7 @@ export default function CartScreen() {
           setSelectedAddress(addressList[0].id);
         }
       } catch (error) {
-        console.log("Error cargando direcciones:", error);
+        console.log(error);
       } finally {
         setLoadingAddresses(false);
       }
@@ -109,7 +102,6 @@ export default function CartScreen() {
     fetchAddresses();
   }, [user]);
 
-  
   useEffect(() => {
     const fetchUpsellProducts = async () => {
       try {
@@ -137,12 +129,10 @@ export default function CartScreen() {
     fetchUpsellProducts();
   }, [cart]);
 
- 
   const handleIncrease = (item: any) => {
     addToCart({ ...item, quantity: 1 });
   };
 
-  
   const handleDecrease = (item: any) => {
     if (item.quantity > 1) {
       if (decreaseCart) decreaseCart(item.id);
@@ -153,7 +143,6 @@ export default function CartScreen() {
     }
   };
 
-  
   const handleCardNumberChange = (text: string) => setCardNumber(text.replace(/[^0-9]/g, ''));
   const handleCVCChange = (text: string) => setCardCVC(text.replace(/[^0-9]/g, ''));
   const handleDateChange = (text: string) => {
@@ -194,7 +183,6 @@ export default function CartScreen() {
     }, 2000);
   };
 
-  
   if (!cart || cart.length === 0) {
     return (
       <View style={styles.container}>
@@ -266,14 +254,10 @@ export default function CartScreen() {
         </View>
       </ScrollView>
 
-      {}
-      
-      {}
       <View style={styles.chatbotContainer}>
         <OpenChatbotButton />
       </View>
 
-      {}
       <View style={styles.footerCard}>
         <View style={styles.totalSection}>
           <Text style={styles.totalLabel}>Total a pagar</Text>
@@ -289,7 +273,6 @@ export default function CartScreen() {
         </TouchableOpacity>
       </View>
 
-      {}
       <Modal visible={checkoutVisible} animationType="slide" presentationStyle="pageSheet">
          <View style={styles.checkoutContainer}>
             <View style={styles.checkoutHeader}>
@@ -300,7 +283,6 @@ export default function CartScreen() {
             </View>
 
             <ScrollView contentContainerStyle={{padding: 20, paddingBottom: 50}}>
-                {}
                 <Text style={styles.sectionHeader}>¿Dónde lo enviamos?</Text>
                 
                 {loadingAddresses ? (
@@ -388,7 +370,6 @@ export default function CartScreen() {
          </View>
       </Modal>
 
-      {}
       <Modal visible={successVisible} transparent animationType="fade">
           <View style={styles.successOverlay}>
              <View style={styles.successCard}>
@@ -461,22 +442,16 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', alignItems: 'center', paddingTop: 60, paddingHorizontal: 20, paddingBottom: 15, backgroundColor: '#FFF', borderBottomWidth: 1, borderBottomColor: '#F0F0F0' },
   backCircle: { width: 40, height: 40, borderRadius: 20, backgroundColor: '#F5F5F5', justifyContent: 'center', alignItems: 'center', marginRight: 15 },
   headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#333' },
-  
-  
   emptyStateContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 40, marginTop: height * 0.15 },
   emptyIconContainer: { backgroundColor: '#F0F0F0', padding: 30, borderRadius: 100, marginBottom: 20 },
   emptyTitle: { fontSize: 20, fontWeight: 'bold', color: '#333', marginBottom: 10 },
   emptySubtitle: { fontSize: 14, color: '#888', textAlign: 'center', marginBottom: 30 },
   goToStoreBtn: { backgroundColor: '#83c41a', paddingVertical: 15, paddingHorizontal: 50, borderRadius: 30, shadowColor: "#83c41a", shadowOpacity: 0.3, shadowOffset: {width:0, height:5} },
   goToStoreText: { color: '#FFF', fontWeight: 'bold', fontSize: 16 },
-  
-  
   warningBanner: { backgroundColor: '#FFF3E0', padding: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   warningText: { color: '#EF6C00', marginLeft: 8, fontSize: 13, fontWeight: '500' },
   successBanner: { backgroundColor: '#E8F5E9', padding: 12, flexDirection: 'row', justifyContent: 'center', alignItems: 'center' },
   successText: { color: '#2E7D32', marginLeft: 8, fontSize: 13, fontWeight: 'bold' },
-  
-  
   listContainer: { padding: 20, backgroundColor: '#FFF', marginTop: 10, borderRadius: 20, marginHorizontal: 15 },
   cartItem: { flexDirection: 'row', alignItems: 'center', marginBottom: 20, borderBottomWidth: 1, borderBottomColor: '#F9F9F9', paddingBottom: 15 },
   itemImage: { width: 65, height: 65, resizeMode: 'contain', marginRight: 15, backgroundColor:'#F9F9F9', borderRadius: 10 },
@@ -484,19 +459,15 @@ const styles = StyleSheet.create({
   itemName: { fontSize: 15, fontWeight: '600', color: '#333', marginBottom: 2 },
   itemCategory: { fontSize: 12, color: '#999', marginBottom: 5 },
   itemPrice: { fontSize: 16, fontWeight: 'bold', color: '#000' },
-  
   qtyContainer: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F5F5F5', borderRadius: 20, padding: 4 },
   qtyBtn: { width: 30, height: 30, borderRadius: 15, justifyContent: 'center', alignItems: 'center' },
   qtyBtnRed: { backgroundColor: '#FFEBEE' },
   qtyBtnGreen: { backgroundColor: '#83c41a' },
   qtyBtnGray: { backgroundColor: '#E0E0E0' },
   qtyText: { marginHorizontal: 12, fontWeight: 'bold', fontSize: 15 },
-  
   cleanBtn: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginTop: 10 },
   clearCartText: { color: '#D32F2F', fontSize: 13, fontWeight: '600', marginLeft: 5 },
   divider: { height: 10 },
-  
-  
   upsellSection: { marginTop: 10, paddingLeft: 20 },
   upsellTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 15, color: '#333' },
   upsellCard: { width: width * 0.4, backgroundColor: '#FFF', borderRadius: 16, padding: 10, marginRight: 15, elevation: 2, shadowColor: "#000", shadowOpacity: 0.05, shadowOffset: {width: 0, height: 2}, marginBottom: 10 },
@@ -508,8 +479,6 @@ const styles = StyleSheet.create({
   upsellPrice: { fontSize: 15, fontWeight: 'bold', color: '#333' },
   upsellOldPrice: { fontSize: 11, color: '#999', textDecorationLine: 'line-through' },
   upsellName: { fontSize: 12, color: '#666', marginTop: 2, height: 32 },
-  
-  
   footerCard: { position: 'absolute', bottom: 80, left: 20, right: 20, backgroundColor: '#FFF', paddingHorizontal: 20, paddingVertical: 15, borderRadius: 25, shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 1000 },
   totalSection: { flexDirection: 'column' },
   totalLabel: { fontSize: 12, color: '#888', fontWeight: '600' },
@@ -518,48 +487,37 @@ const styles = StyleSheet.create({
   payButtonActive: { backgroundColor: '#83c41a', shadowColor: "#83c41a", shadowOpacity: 0.4, shadowOffset: {width:0, height:4} },
   payButtonDisabled: { backgroundColor: '#E0E0E0' },
   payButtonText: { color: '#FFF', fontSize: 15, fontWeight: 'bold' },
-  
-  
   chatbotContainer: { position: "absolute", bottom: 160, right: 20, zIndex: 999 },
-
-  
   checkoutContainer: { flex: 1, backgroundColor: '#F9F9F9' },
   checkoutHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 20, backgroundColor: '#FFF' },
   checkoutTitle: { fontSize: 20, fontWeight: 'bold' },
   sectionHeader: { fontSize: 16, fontWeight: 'bold', marginTop: 20, marginBottom: 15, color: '#333' },
   label: { fontSize: 12, color: '#666', marginBottom: 5, fontWeight: '600', marginTop: 10 },
-  
   addressCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 15, borderRadius: 12, marginRight: 10, borderWidth: 1, borderColor: '#EEE', width: width * 0.6 },
   addressCardSelected: { borderColor: '#83c41a', backgroundColor: '#F4F9EB' },
   addrAlias: { fontWeight: 'bold', fontSize: 14 },
   addrText: { fontSize: 12, color: '#666' },
   addAddressBtnSmall: { marginTop: 10, backgroundColor: '#83c41a', padding: 10, borderRadius: 10, alignItems: 'center' },
   noAddressBox: { padding: 20, backgroundColor: '#EEE', borderRadius: 10, alignItems: 'center' },
-  
   paymentMethods: { flexDirection: 'row', justifyContent: 'space-between' },
   paymentOption: { flex: 1, backgroundColor: '#FFF', padding: 20, borderRadius: 12, alignItems: 'center', marginHorizontal: 5, borderWidth: 1, borderColor: '#EEE' },
   paymentOptionSelected: { borderColor: '#83c41a', backgroundColor: '#F4F9EB' },
   paymentText: { marginTop: 10, fontWeight: '600', fontSize: 12 },
-  
   cardForm: { backgroundColor: '#FFF', padding: 20, borderRadius: 12, marginTop: 15 },
   input: { backgroundColor: '#F5F5F5', borderRadius: 8, padding: 12, fontSize: 14 },
-  
   summaryContainer: { backgroundColor: '#FFF', padding: 20, borderRadius: 12, marginTop: 30 },
   summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
   summaryLabel: { color: '#666' },
   summaryValue: { fontWeight: '600' },
   totalBigLabel: { fontSize: 18, fontWeight: 'bold' },
   totalBigValue: { fontSize: 18, fontWeight: 'bold', color: '#83c41a' },
-  
   checkoutFooter: { padding: 20, backgroundColor: '#FFF', borderTopWidth: 1, borderTopColor: '#EEE' },
   confirmButton: { backgroundColor: '#83c41a', padding: 18, borderRadius: 15, alignItems: 'center' },
   confirmButtonText: { color: '#FFF', fontWeight: 'bold', fontSize: 18 },
-  
   successOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
   successCard: { backgroundColor: '#FFF', width: '80%', padding: 40, borderRadius: 25, alignItems: 'center' },
   successTitle: { fontSize: 22, fontWeight: 'bold', marginTop: 20, color: '#333' },
   successSub: { fontSize: 16, color: '#888', marginTop: 10, textAlign: 'center' },
-  
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
   modalContent: { backgroundColor: '#FFF', width: '80%', borderRadius: 20, padding: 25, alignItems: 'center' },
   modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
